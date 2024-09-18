@@ -39,7 +39,7 @@ library(grid)
 setwd("/Users/scott.miller/Desktop/WISE Scales/WISE Infographics/")
 
 # Import Data: this needs to match the data set stored in the directory folder
-data <- read_excel("HSI Mozambique HWISE Baseline Data.xlsx")
+data <- read_excel("[Example] Mozambique HWISE Baseline Data.xlsx")
 
 
 # ----------------------------------
@@ -49,10 +49,10 @@ data <- read_excel("HSI Mozambique HWISE Baseline Data.xlsx")
 text_scale <- "Household (HWISE)"   # Enter the WISE scale (e.g. HWISE, iWISE, etc.)
 text_country <- "Mozambique"    # Enter country name
 text_survey <- "Baseline Survey"    # Enter brief survey description
-text_collectedby <- "Helvetas Mozambique"   # Enter name of organization that collected this data
-text_timing <- "November 2023"  # Enter the timing of data collection 
+text_collectedby <- "[Organization]"   # Enter name of organization that collected this data
+text_timing <- "November 2023 (Baseline Survey)"  # Enter the timing of data collection 
 text_geography <- "Project implementation areas within Memba, Larde, Erati, and Moma Districts"     # Describe the geographic coverage of the surveys
-
+text_samplesize <- "437 Households"
 
 # ----------------------------------
 # Data Cleaning & Naming
@@ -158,18 +158,29 @@ data$HHsize_group <- cut(data$`Household Size`, breaks = c(0, 5, 7, 10, Inf),
                     labels = c("<5", "5-7", "8-10", "11+"),
                     right = FALSE)
 
-# Calculate the mean of Y for each X_group
-hhsize_data <- data %>%
-    group_by(HHsize_group) %>%
-    summarize(pct_insecure = mean(Insecurity_binary == "Water Insecure", na.rm = TRUE) * 100)
 
-# Create and store bar graph
-Insecurity_by_HHsize <- ggplot(hhsize_data, aes(x = HHsize_group, y = pct_insecure)) +
-    geom_bar(stat = "identity", fill = "#2074bc") +
-    labs(x = "Household Size", y = "Insecurity") +
-    geom_text(aes(label = paste(round(pct_insecure, 1), "%", sep = "")),  # Add this line to annotate bars with their percentage values
-              position = position_dodge(width = 0.9), vjust = 1.3, color = "white") +
-    theme_minimal()
+# Calculate the percentage for each Insecurity_level within each HHsize_group, excluding NAs
+hhsize_data <- data %>%
+    filter(!is.na(Insecurity_level) & !is.na(HHsize_group)) %>%  # Filter out NAs
+    group_by(HHsize_group, Insecurity_level) %>%
+    summarize(count = n(), .groups = "drop") %>%
+    group_by(HHsize_group) %>%
+    mutate(percentage = count / sum(count) * 100)
+
+# Create and store stacked bar graph
+Insecurity_by_HHsize <- ggplot(hhsize_data, aes(x = HHsize_group, y = percentage, fill = Insecurity_level)) +
+    geom_bar(stat = "identity") +
+    labs(x = "Household Size", y = "Percentage") +
+    geom_text(data = . %>% filter(percentage >= 5),  # Only label percentages >= 5%
+              aes(label = paste(round(percentage, 0), "%", sep = "")),
+              position = position_stack(vjust = 0.5), color = "white", size = 3) +
+    theme_minimal() +
+    scale_fill_brewer(palette = "Blues") +  # You can change the color palette as needed
+    scale_y_continuous(labels = scales::percent_format(scale = 1)) +  # Format y-axis as percentages
+    theme(
+        axis.text.x = element_text(hjust = 1),  # Rotate x-axis labels for better readability
+        legend.position = "none",  # Move legend to bottom
+    )
 
 
 #-----------------------
@@ -189,7 +200,28 @@ Insecurity_by_District <- ggplot(district_data, aes(x = District, y = pct_insecu
               position = position_dodge(width = 0.9), vjust = 1.3, color = "white") +
     theme_minimal()
 
+# Calculate the percentage for each Insecurity_level within each HHsize_group, excluding NAs
+district_data <- data %>%
+    filter(!is.na(Insecurity_level) & !is.na(District)) %>%  # Filter out NAs
+    group_by(District, Insecurity_level) %>%
+    summarize(count = n(), .groups = "drop") %>%
+    group_by(District) %>%
+    mutate(percentage = count / sum(count) * 100)
 
+# Create and store stacked bar graph
+Insecurity_by_District <- ggplot(district_data, aes(x = District, y = percentage, fill = Insecurity_level)) +
+    geom_bar(stat = "identity") +
+    labs(x = "District", y = "Percentage", fill = "") +
+    geom_text(data = . %>% filter(percentage >= 5),  # Only label percentages >= 5%
+              aes(label = paste(round(percentage, 0), "%", sep = "")),
+              position = position_stack(vjust = 0.5), color = "white", size = 3) +
+    theme_minimal() +
+    scale_fill_brewer(palette = "Blues") +  # You can change the color palette as needed
+    scale_y_continuous(labels = scales::percent_format(scale = 1)) +  # Format y-axis as percentages
+    theme(
+        axis.text.x = element_text(hjust = 1),  # Rotate x-axis labels for better readability
+        legend.position = "bottom",  # Move legend to bottom
+    )
 
 
 # ------------------------------------------------------------------------------
@@ -251,10 +283,11 @@ grid.text(paste(
     "Collected by:",
     "Collection Timing:",
     "Geographic Coverage:",
+    "Sample Size:",
     "",
     "", sep = "\n"), vjust = 0, hjust = 0, 
     x = unit(0.05, "npc"), 
-    y = unit(0.72, "npc"), 
+    y = unit(0.705, "npc"), 
     gp = gpar(col = "Black", cex = 1, fontface = "bold"))
 
 grid.text(paste(
@@ -263,10 +296,11 @@ grid.text(paste(
     text_collectedby,
     text_timing,
     text_geography,
+    text_samplesize,
     "",
     "",sep = "\n"), vjust = 0, hjust = 0, 
     x = unit(0.27, "npc"), 
-    y = unit(0.72, "npc"), 
+    y = unit(0.705, "npc"), 
     gp = gpar(col = "Black", cex = 1))
 
 
@@ -275,20 +309,20 @@ grid.text(paste(
 #-----------------------
 
 grid.text(paste(
-    "Northwestern University, charity: water,",
-    "& others",
+    "charity: water and its local partners",
     sep = "\n"), vjust = 0, hjust = 0, 
     x = unit(0.05, "npc"), 
-    y = unit(0.66, "npc"), 
+    y = unit(0.68, "npc"), 
     gp = gpar(col = "Black", cex = 1.3, fontface = "bold"))
 
 
 grid.text(paste(
-    "                     have partnered to estimate experiences",
-    "with water access and use around the world. Currently, 58",
-    "organizations across 22 countries in Africa and Asia are",
-    "measuring water insecurity in their program areas through",
-    "charity: water's monitoring & evaluation framework.",
+    "",
+    "are working to estimate experiences with water access and",
+    "use around the world. Currently, 58 organizations across",
+    "22 countries in Africa and Asia are measuring water",
+    "insecurity in their program areas through charity: water's",
+    "monitoring & evaluation framework.",
     "",
     sep = "\n"), vjust = 0, hjust = 0, 
     x = unit(0.05, "npc"), 
@@ -312,12 +346,13 @@ grid.text(paste(
     pct_insecure,
     "", sep = "\n"), vjust = 0, hjust = 0, 
     x = unit(0.05, "npc"), 
-    y = unit(0.485, "npc"), 
+    y = unit(0.5, "npc"), 
     gp = gpar(col = "#2074bc", cex = 1.7, fontface = "bold"))
 
 grid.text(paste(
     "                   of households participating in the survey",
-    "experienced moderate-to-high water insecurity in 2023.",
+    "experienced moderate-to-high water insecurity in 2023,",
+    "with experiences varying by household size and district.",
     "", sep = "\n"), vjust = 0, hjust = 0, 
     x = unit(0.05, "npc"), 
     y = unit(0.48, "npc"), 
