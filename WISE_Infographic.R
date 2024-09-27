@@ -49,6 +49,7 @@ data <- read_excel("[Example] Mozambique HWISE Baseline Data.xlsx")
 # ----------------------------------
 
 text_scale <- "Household (HWISE)"   # Enter the WISE scale (e.g. HWISE, iWISE, etc.)
+text_recallperiod <- "4 weeks"
 text_country <- "Mozambique"    # Enter country name
 text_survey <- "Baseline Survey"    # Enter brief survey description
 text_collectedby <- "[Organization]"   # Enter name of organization that collected this data
@@ -297,9 +298,9 @@ grid.text(paste(text_country, text_survey, sep = " "),
 
 grid.rect(gp = gpar(fill = "#0076c3", col = "#0076c3", alpha = 0.57), 
           x = unit(0.5, "npc"), 
-          y = unit(0.78, "npc"), 
+          y = unit(0.785, "npc"), 
           width = unit(1, "npc"), 
-          height = unit(0.11, "npc"))
+          height = unit(0.115, "npc"))
 
 grid.text("", 
           y = unit(0.78, "npc"), 
@@ -310,6 +311,7 @@ grid.text("",
 grid.text(paste(
     "",
     "Scale:",
+    "Recall Period:",
     "Collected By:",
     "Collection Timing:",
     "Geographic Coverage:",
@@ -323,6 +325,7 @@ grid.text(paste(
 grid.text(paste(
     "",
     text_scale,
+    text_recallperiod,
     text_collectedby,
     text_timing,
     text_geography,
