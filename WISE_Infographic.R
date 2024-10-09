@@ -52,7 +52,7 @@ text_scale <- "Household (HWISE)"   # Enter the WISE scale (e.g. HWISE, iWISE, e
 text_recallperiod <- "4 weeks"
 text_country <- "Mozambique"    # Enter country name
 text_survey <- "Baseline Survey"    # Enter brief survey description
-text_collectedby <- "[Organization]"   # Enter name of organization that collected this data
+text_collectedby <- "Helvetas Mozabmique"   # Enter name of organization that collected this data
 text_timing <- "November 2023 (Baseline Survey)"  # Enter the timing of data collection 
 text_geography <- "Project implementation areas within Memba, Larde, Erati, and Moma Districts"     # Describe the geographic coverage of the surveys
 text_samplesize <- "437 Households. Two-stage simple random sampling of (i) communities and (ii) households."
